@@ -1,0 +1,48 @@
+#!/bin/bash
+LecsProfDir="/var/environment/profile/"
+#Edit this ^^^^ to your particular directory#
+if [[ $EUID != 0 ]]
+    then
+        printf "%s\n" "Exiting, you must be root in order to use this program!"
+        exit 1 
+    else
+        printf "%s\n" "Checking Profile Directory..."
+        if [[ -d $LecsProfDir ]]
+	    then
+	        printf "%s\n" "Found directory at $LecsProfDir..."
+	    else
+		printf "%S\n" "Could not find directory at $LecsProfDir... Nothing to do! Exiting."
+		exit 1
+        fi
+fi	 
+#Read STDIN from user#
+printf "%s\n" "Please enter the name of the profile, you can enter. You can use any case here, this is a filename."
+read PRONAME
+printf "%s\n" "Please note that all entries should be entered in lowercase, as this is case sensitive." "Please enter the name of the catalyst environment hosts, without the fqdn, seperated by a space."
+read CUSTHOSTS
+printf "%s\n" "Please enter the name of the staged environment, such as dev or tst, etc."
+read CENV
+printf "%s\n" "Please enter the fully qualified domain name, sans client ( titan,asgard,etc) and env (such as dev,tst prod. A good example would be client.mooretide.com"
+read FQDN
+printf "%s\n" "Please enter the client name here, such as titan,asgard,usvi, etc."
+read CLIENT
+touch $LecsProfDir$PRONAME
+touch -a $LecsProfDir$PRONAME
+if [[ -w $LecsProfDir$PRONAME ]]
+    then
+	printf "%s\n" "CUSTHOSTS=\"$CUSTHOSTS\"" > $LecsProfDir$PRONAME
+	printf "%s\n" "ENV=\"$CENV\"" >> $LecsProfDir$PRONAME
+	printf "%s\n" "FQDN=\"$FQDN\"" >> $LecsProfDir$PRONAME
+	printf "%s\n" "CLIENT=\"$CLIENT\"" >> $LecsProfDir$PRONAME
+    else
+	printf "%s\n" "File either was not created or is not writable, please check the rootfs for a READ-ONLY condition, or check to ensure you are not in a restricted shell or have proper sudo/root perms."
+	exit 1
+fi
+if [[ -s $LecsProfDir$PRONAME && -N $LecsProfDir$PRONAME ]]
+    then
+        printf "%s\n" "File was successfully created and modified."     
+        exit 0
+    else
+	printf "%s\n" "File was NOT successfully modified... check to make sure the filesystem is in RW and is not full."
+	exit 1
+fi
